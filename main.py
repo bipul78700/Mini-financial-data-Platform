@@ -22,7 +22,12 @@ app = FastAPI(
 # Enable CORS for frontend access
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, specify actual origins
+    allow_origins=[
+        "https://bipul78700.github.io",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+        "*"  # Allow all for development
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

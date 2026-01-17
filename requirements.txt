@@ -1,0 +1,8 @@
+fastapi==0.110.0
+uvicorn==0.29.0
+pandas==2.1.4
+numpy==1.26.4
+yfinance==0.2.36
+sqlalchemy==2.0.25
+python-dateutil==2.8.2
+plotly==5.18.0

@@ -124,46 +124,55 @@ async def get_stock_summary(
     db: Session = Depends(get_db)
 ):
     """
-    Get summary statistics for a stock (52-week high, low, avg close)
-    
-    Args:
-        symbol: Company symbol
-        db: Database session
-        
-    Returns:
-        Summary statistics
+    Get summary statistics for a stock from DB (production-safe)
     """
     try:
         symbol_upper = symbol.upper()
-        
-        # Check if company is available
-        if symbol_upper not in collector.get_available_companies():
+
+        # Fetch data from DB
+        records = (
+            db.query(StockData)
+            .filter(StockData.symbol == symbol_upper)
+            .order_by(StockData.date)
+            .all()
+        )
+
+        if not records:
             raise HTTPException(
                 status_code=404,
-                detail=f"Company '{symbol}' not found"
+                detail=f"No data available for {symbol_upper}"
             )
-        
-        # Fetch full year of data
-        df = collector.fetch_stock_data(symbol_upper, period="1y")
-        if df is None or df.empty:
-            raise HTTPException(status_code=404, detail=f"No data available for {symbol}")
-        
-        # Process data
-        df_processed = processor.process_data(df)
-        
-        # Get summary stats
-        summary = processor.get_summary_stats(df_processed)
-        
+
+        # Convert to DataFrame
+        df = pd.DataFrame([
+            {
+                "date": r.date,
+                "close": r.close
+            }
+            for r in records
+        ])
+
+        summary = {
+            "high_52w": float(df["close"].max()),
+            "low_52w": float(df["close"].min()),
+            "avg_close": float(df["close"].mean()),
+            "current_close": float(df["close"].iloc[-1])
+        }
+
         return {
             "status": "success",
             "symbol": symbol_upper,
             "summary": summary
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error fetching summary: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error fetching summary: {str(e)}"
+        )
+
 
 
 @router.get("/compare")

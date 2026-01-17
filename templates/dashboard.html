@@ -280,11 +280,10 @@
         // For deployed backend: Update this to your backend URL (e.g., https://your-backend.railway.app/api)
         const API_BASE = (() => {
             // Check if we're on GitHub Pages
-            if (window.location.hostname === 'bipul78700.github.io' || 
-                window.location.hostname.includes('github.io')) {
-                // Update this to your deployed backend URL
-                // Example: 'https://your-backend.railway.app/api'
-                // Example: 'https://your-backend.render.com/api'
+            if (
+                window.location.hostname === 'bipul78700.github.io' || 
+                window.location.hostname.includes('github.io')
+                ) {
                 return 'https://mini-financial-data-platform-production-37ae.up.railway.app/api'; // Backend API URL
             }
             // Default to localhost for local development

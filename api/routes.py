@@ -44,86 +44,78 @@ async def get_companies():
 @router.get("/data/{symbol}")
 async def get_stock_data(
     symbol: str,
-    days: int = Query(30, ge=1, le=365, description="Number of days of data to retrieve"),
+    days: int = Query(30, ge=1, le=365),
     db: Session = Depends(get_db)
 ):
-    """
-    Get stock data for a specific symbol (last N days)
-    
-    Args:
-        symbol: Company symbol (e.g., TCS, INFY)
-        days: Number of days of data to retrieve (default: 30, max: 365)
-        db: Database session
-        
-    Returns:
-        JSON response with stock data
-    """
     try:
-        symbol_upper = symbol.upper()
-        
-        # Check if company is available
-        if symbol_upper not in collector.get_available_companies():
-            raise HTTPException(
-                status_code=404,
-                detail=f"Company '{symbol}' not found. Available companies: {collector.get_available_companies()}"
-            )
-        
-        # Query database for recent data
+        symbol = symbol.upper()
+
+        if symbol not in collector.get_available_companies():
+            raise HTTPException(status_code=404, detail="Company not found")
+
         cutoff_date = datetime.now().date() - timedelta(days=days)
-        db_records = db.query(StockData).filter(
-            StockData.symbol == symbol_upper,
-            StockData.date >= cutoff_date
-        ).order_by(desc(StockData.date)).limit(days).all()
-        
-        # If no data in DB or insufficient data, fetch fresh data
-        if len(db_records) < days:
-            # Fetch fresh data
-            df = collector.fetch_stock_data(symbol_upper)
-            if df is None or df.empty:
-                raise HTTPException(status_code=404, detail=f"No data available for {symbol}")
-            
-            # Process data
-            df_processed = processor.process_data(df)
-            
-            # Store in database (async operation, but we'll do it synchronously for simplicity)
-            # For production, consider background tasks
-            
-            # Get last N days
-            df_processed = df_processed.tail(days)
+
+        db_records = (
+            db.query(StockData)
+            .filter(
+                StockData.symbol == symbol,
+                StockData.date >= cutoff_date
+            )
+            .order_by(desc(StockData.date))
+            .all()
+        )
+
+        # ✅ CASE 1: DB has data
+        if db_records:
+            df = pd.DataFrame([{
+                "date": r.date,
+                "open": r.open,
+                "high": r.high,
+                "low": r.low,
+                "close": r.close,
+                "volume": r.volume,
+                "daily_return": r.daily_return,
+                "ma_7": r.ma_7,
+                "volatility_score": r.volatility_score
+            } for r in db_records])
+
+        # ✅ CASE 2: DB empty → FETCH + SAVE
         else:
-            # Convert DB records to DataFrame
-            data_list = []
-            for record in db_records:
-                data_list.append({
-                    'date': record.date,
-                    'open': record.open,
-                    'high': record.high,
-                    'low': record.low,
-                    'close': record.close,
-                    'volume': record.volume,
-                    'daily_return': record.daily_return,
-                    'ma_7': record.ma_7,
-                    'volatility_score': record.volatility_score
-                })
-            df_processed = pd.DataFrame(data_list)
-            # Sort by date (ascending) for consistent ordering
-            df_processed = df_processed.sort_values('date').reset_index(drop=True)
-        
-        # Convert to JSON-serializable format
-        df_processed['date'] = pd.to_datetime(df_processed['date']).dt.strftime('%Y-%m-%d')
-        records = df_processed.to_dict('records')
-        
+            df = collector.fetch_stock_data(symbol)
+            if df is None or df.empty:
+                raise HTTPException(status_code=404, detail="No stock data available")
+
+            df = processor.process_data(df).tail(days)
+
+            for _, row in df.iterrows():
+                db.add(StockData(
+                    symbol=symbol,
+                    date=row["date"],
+                    open=row["open"],
+                    high=row["high"],
+                    low=row["low"],
+                    close=row["close"],
+                    volume=row["volume"],
+                    daily_return=row.get("daily_return"),
+                    ma_7=row.get("ma_7"),
+                    volatility_score=row.get("volatility_score")
+                ))
+
+            db.commit()
+
+        df["date"] = pd.to_datetime(df["date"]).dt.strftime("%Y-%m-%d")
+
         return {
             "status": "success",
-            "symbol": symbol_upper,
-            "days": len(records),
-            "data": records
+            "symbol": symbol,
+            "data": df.to_dict("records")
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error fetching data: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 
 @router.get("/summary/{symbol}")

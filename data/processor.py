@@ -207,18 +207,36 @@ class StockDataProcessor:
         # Calculate average close price
         avg_close = float(df['close'].mean()) if 'close' in df.columns else 0.0
         
-        # Get latest values
-        latest = df.iloc[-1] if len(df) > 0 else None
+        # Get latest values safely
+        latest = None
+        current_close = 0.0
+        if len(df) > 0:
+            try:
+                latest = df.iloc[-1]
+                if latest is not None and 'close' in latest and pd.notna(latest['close']):
+                    current_close = float(latest['close'])
+            except (IndexError, KeyError) as e:
+                logger.warning(f"Error getting latest close price: {e}")
+        
+        # Get date range safely
+        date_start = None
+        date_end = None
+        if 'date' in df.columns and len(df) > 0:
+            try:
+                date_start = str(df['date'].min())
+                date_end = str(df['date'].max())
+            except Exception as e:
+                logger.warning(f"Error getting date range: {e}")
         
         summary = {
             'high_52w': week52_stats['high_52w'],
             'low_52w': week52_stats['low_52w'],
             'avg_close': avg_close,
-            'current_close': float(latest['close']) if latest is not None and 'close' in latest else 0.0,
+            'current_close': current_close,
             'total_records': len(df),
             'date_range': {
-                'start': str(df['date'].min()) if 'date' in df.columns else None,
-                'end': str(df['date'].max()) if 'date' in df.columns else None
+                'start': date_start,
+                'end': date_end
             }
         }
         

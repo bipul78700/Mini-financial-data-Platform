@@ -3,31 +3,50 @@ Stock Data Intelligence Dashboard
 Main FastAPI application entry point
 """
 
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from api.routes import router
 from models.database import init_db
+import logging
 import os
+import config
+
+# Configure logging
+logging.basicConfig(
+    level=getattr(logging, config.LOG_LEVEL),
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Lifespan context manager for startup and shutdown events"""
+    # Startup
+    logger.info("Initializing database...")
+    init_db()
+    logger.info("🚀 Stock Data Intelligence Dashboard API is ready!")
+    yield
+    # Shutdown (if needed in future)
+    logger.info("Shutting down...")
+
 
 # Initialize FastAPI app
 app = FastAPI(
-    title="Stock Data Intelligence Dashboard",
-    description="A comprehensive API for stock market data analysis and insights",
-    version="1.0.0",
+    title=config.APP_NAME,
+    description=config.APP_DESCRIPTION,
+    version=config.APP_VERSION,
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
+    lifespan=lifespan
 )
 
 # Enable CORS for frontend access
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://bipul78700.github.io",
-        "http://localhost:8000",
-        "http://127.0.0.1:8000",
-        "*"  # Allow all for development
-    ],
+    allow_origins=config.ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -35,13 +54,6 @@ app.add_middleware(
 
 # Include API routes
 app.include_router(router, prefix="/api", tags=["Stock Data"])
-
-
-@app.on_event("startup")
-async def startup_event():
-    """Initialize database on startup"""
-    init_db()
-    print("🚀 Stock Data Intelligence Dashboard API is ready!")
 
 
 @app.get("/")
@@ -78,4 +90,4 @@ async def dashboard():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host=config.API_HOST, port=config.API_PORT)

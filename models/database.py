@@ -3,13 +3,16 @@ Database Models and Setup
 SQLite database for storing stock data
 """
 
-from sqlalchemy import create_engine, Column, Integer, String, Float, Date, Index
+from sqlalchemy import create_engine, Column, Integer, String, Float, Date, Index, UniqueConstraint
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-import os
+import logging
+import config
+
+logger = logging.getLogger(__name__)
 
 # Database file path
-DATABASE_URL = "sqlite:///./stock_data.db"
+DATABASE_URL = config.DATABASE_URL
 
 # Create engine
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
@@ -39,9 +42,10 @@ class StockData(Base):
     ma_7 = Column(Float, nullable=True)
     volatility_score = Column(Float, nullable=True)
     
-    # Create composite index for faster queries
+    # Create composite index and unique constraint to prevent duplicates
     __table_args__ = (
         Index('idx_symbol_date', 'symbol', 'date'),
+        UniqueConstraint('symbol', 'date', name='uq_symbol_date'),
     )
     
     def __repr__(self):
@@ -50,8 +54,12 @@ class StockData(Base):
 
 def init_db():
     """Initialize database by creating all tables"""
-    Base.metadata.create_all(bind=engine)
-    print("Database initialized successfully")
+    try:
+        Base.metadata.create_all(bind=engine)
+        logger.info("Database initialized successfully")
+    except Exception as e:
+        logger.error(f"Error initializing database: {e}")
+        raise
 
 
 def get_db():

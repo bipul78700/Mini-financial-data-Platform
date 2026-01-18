@@ -80,7 +80,16 @@ class StockDataCollector:
             
             # Ensure date column is properly formatted
             if 'date' in df.columns:
-                df['date'] = pd.to_datetime(df['date']).dt.date
+                try:
+                    df['date'] = pd.to_datetime(df['date']).dt.date
+                except Exception as e:
+                    logger.warning(f"Error formatting date column: {e}")
+                    # Try to use index if date column fails
+                    if df.index.name == 'Date' or isinstance(df.index, pd.DatetimeIndex):
+                        df.reset_index(inplace=True)
+                        if 'Date' in df.columns:
+                            df['date'] = pd.to_datetime(df['Date']).dt.date
+                            df.drop('Date', axis=1, inplace=True, errors='ignore')
             
             logger.info(f"Successfully fetched {len(df)} records for {symbol}")
             return df

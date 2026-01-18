@@ -9,6 +9,9 @@ from datetime import datetime, timedelta
 from typing import List, Optional
 import logging
 
+# --------------------------------------------------
+# Logging setup
+# --------------------------------------------------
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -21,111 +24,116 @@ class StockDataCollector:
 
     # Indian stock symbols mapping (NSE format)
     INDIAN_STOCKS = {
-        "TCS": "TCS.NS",  # TCS on NSE
-        "INFY": "INFY.NS",  # Infosys on NSE
-        "RELIANCE": "RELIANCE.NS",  # Reliance on NSE
+        "TCS": "TCS.NS",
+        "INFY": "INFY.NS",
+        "RELIANCE": "RELIANCE.NS",
         "HDFCBANK": "HDFCBANK.NS",
         "ICICIBANK": "ICICIBANK.NS",
         "WIPRO": "WIPRO.NS",
         "HCLTECH": "HCLTECH.NS",
     }
 
+    # --------------------------------------------------
+    # Constructor
+    # --------------------------------------------------
     def __init__(self, period: str = "1y"):
         """
-        Initialize the data collector
-
         Args:
-            period: Time period for data collection (1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y, ytd, max)
+            period: Time period (e.g. '30', '1y', '6mo')
         """
         self.period = period
         self.available_companies = list(self.INDIAN_STOCKS.keys())
 
+    # --------------------------------------------------
+    # Public helpers
+    # --------------------------------------------------
     def get_available_companies(self) -> List[str]:
         """Returns list of available company symbols"""
         return self.available_companies
 
+    # --------------------------------------------------
+    # Core fetch logic
+    # --------------------------------------------------
     def fetch_stock_data(
         self, symbol: str, period: Optional[str] = None
     ) -> Optional[pd.DataFrame]:
         """
-        Fetches stock data for a given symbol
-
-        Args:
-            symbol: Company symbol (e.g., 'TCS', 'INFY')
-            period: Optional override for data period
-
-        Returns:
-            DataFrame with stock data or None if error
+        Fetch stock data for a single symbol
         """
         try:
-            # Map Indian stock symbol to yfinance format
+            # Map symbol to yfinance format
             yf_symbol = self.INDIAN_STOCKS.get(symbol.upper(), symbol)
 
-            # Use provided period or default
             fetch_period = period or self.period
-
             logger.info(
-                f"Fetching data for {symbol} ({yf_symbol}) for period {fetch_period}"
+                f"Fetching data for {symbol} ({yf_symbol}) | period={fetch_period}"
             )
 
-            # Fetch data from yfinance
             ticker = yf.Ticker(yf_symbol)
-            df = ticker.history(period=fetch_period)
+            end_date = datetime.now()
 
-            # 🔁 Fallback for cloud (Render blocks NSE)
-            if df.empty and yf_symbol.endswith(".NS"):
-                logger.warning(f"NSE data failed for {symbol}, trying global symbol")
-                ticker = yf.Ticker(symbol)
+            # ----------------------------------------------
+            # SAFE period handling
+            # ----------------------------------------------
+            if fetch_period.isdigit():
+                days = int(fetch_period)
+                start_date = end_date - timedelta(days=days)
+                df = ticker.history(start=start_date, end=end_date)
+            else:
                 df = ticker.history(period=fetch_period)
 
+            # ----------------------------------------------
+            # Fallback for cloud (Render blocks NSE)
+            # ----------------------------------------------
+            if df.empty and yf_symbol.endswith(".NS"):
+                logger.warning(
+                    f"NSE blocked for {symbol}, retrying global symbol"
+                )
+                ticker = yf.Ticker(symbol)
+                if fetch_period.isdigit():
+                    df = ticker.history(start=start_date, end=end_date)
+                else:
+                    df = ticker.history(period=fetch_period)
+
+            # ----------------------------------------------
+            # No data → exit
+            # ----------------------------------------------
             if df.empty:
                 logger.warning(f"No data found for symbol {symbol}")
                 return None
 
-            # Reset index to make Date a column
+            # ----------------------------------------------
+            # Cleanup & formatting
+            # ----------------------------------------------
             df.reset_index(inplace=True)
+            df.columns = [c.lower().replace(" ", "_") for c in df.columns]
 
-            # Rename columns to lowercase for consistency
-            df.columns = [col.lower().replace(" ", "_") for col in df.columns]
-
-            # Ensure date column is properly formatted
             if "date" in df.columns:
-                try:
-                    df["date"] = pd.to_datetime(df["date"]).dt.date
-                except Exception as e:
-                    logger.warning(f"Error formatting date column: {e}")
-                    # Try to use index if date column fails
-                    if df.index.name == "Date" or isinstance(
-                        df.index, pd.DatetimeIndex
-                    ):
-                        df.reset_index(inplace=True)
-                        if "Date" in df.columns:
-                            df["date"] = pd.to_datetime(df["Date"]).dt.date
-                            df.drop("Date", axis=1, inplace=True, errors="ignore")
+                df["date"] = pd.to_datetime(df["date"]).dt.date
 
-            logger.info(f"Successfully fetched {len(df)} records for {symbol}")
+            logger.info(
+                f"Successfully fetched {len(df)} records for {symbol}"
+            )
             return df
 
         except Exception as e:
-            logger.error(f"Error fetching data for {symbol}: {str(e)}")
+            logger.error(f"Error fetching data for {symbol}: {e}")
             return None
 
+    # --------------------------------------------------
+    # Fetch multiple stocks
+    # --------------------------------------------------
     def fetch_multiple_stocks(
         self, symbols: List[str], period: Optional[str] = None
     ) -> dict:
         """
-        Fetches data for multiple stocks
-
-        Args:
-            symbols: List of company symbols
-            period: Optional override for data period
-
-        Returns:
-            Dictionary mapping symbols to their DataFrames
+        Fetch data for multiple stocks
         """
         data_dict = {}
+
         for symbol in symbols:
             df = self.fetch_stock_data(symbol, period)
             if df is not None:
                 data_dict[symbol] = df
+
         return data_dict

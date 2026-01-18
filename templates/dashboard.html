@@ -284,10 +284,10 @@
                 window.location.hostname === 'bipul78700.github.io' || 
                 window.location.hostname.includes('github.io')
                 ) {
-                return 'https://mini-financial-data-platform.onrender.com/'; // Backend API URL
+                return 'https://mini-financial-data-platform.onrender.com/api'; // Backend API URL
             }
             // Default to localhost for local development
-            return 'https://mini-financial-data-platform.onrender.com/';
+            return 'http://localhost:8000/api';
         })();
         
         let priceChart, returnsChart, maChart, volatilityChart;

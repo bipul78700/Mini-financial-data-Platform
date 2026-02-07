@@ -3,6 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- If dashboard is on a different host than the API (e.g. static site vs Render API), set your API URL: -->
+         <meta name="api-base" content="https://mini-financial-data-platform-1.onrender.com/api">
     <title>Stock Data Intelligence Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
@@ -275,10 +277,17 @@
     </div>
 
     <script>
-      // Auto-detect API base URL based on environment
-      // For localhost: http://localhost:8000/api
-      // For deployed backend: Update this to your backend URL (e.g., https://your-backend.railway.app/api)
-      const API_BASE = "/api";
+      // API base URL: use same origin when dashboard is served by the same FastAPI app (e.g. /dashboard on Render).
+      // When dashboard is on a different host (e.g. GitHub Pages), add: <meta name="api-base" content="https://your-api.onrender.com/api">
+      (function () {
+        var meta = document.querySelector('meta[name="api-base"]');
+        if (meta && meta.getAttribute('content')) {
+          window.API_BASE = meta.getAttribute('content').replace(/\/$/, '');
+        } else {
+          window.API_BASE = window.location.origin + '/api';
+        }
+      })();
+      const API_BASE = window.API_BASE;
       
       let priceChart, returnsChart, maChart, volatilityChart
       
@@ -309,7 +318,10 @@
           const response = await fetch(`${API_BASE}/data/${symbol}?days=${days}`)
       
           if (!response.ok) {
-            throw new Error(`Backend not accessible. Status: ${response.status}. Make sure your backend is deployed and API_BASE is correct.`)
+            var msg = response.status === 404
+              ? 'Backend returned 404 at ' + (API_BASE + '/data/' + symbol) + '. If this dashboard is on a different host than your API (e.g. static site), add <meta name="api-base" content="https://YOUR-API.onrender.com/api"> in the <head>.'
+              : 'Backend not accessible. Status: ' + response.status + '. Check that your API is running at ' + API_BASE + '.'
+            throw new Error(msg)
           }
       
           const result = await response.json()

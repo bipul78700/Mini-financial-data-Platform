@@ -32,10 +32,10 @@ You need to deploy the FastAPI backend on a platform that supports Python applic
    - Railway will provide a URL like: `https://your-app.railway.app`
    - Your API will be at: `https://your-app.railway.app/api`
 
-5. **Update dashboard.html**:
+5. **Update dashboard.html** (only if the dashboard is hosted on a different domain, e.g. GitHub Pages):
    - Open `templates/dashboard.html`
-   - Find line 288: `return 'https://your-backend-url.here/api';`
-   - Replace with: `return 'https://your-app.railway.app/api';`
+   - In `<head>`, add: `<meta name="api-base" content="https://your-app.railway.app/api">`
+   - Replace with your actual Railway URL (no trailing slash after `/api`)
 
 6. **Commit and push**:
    ```bash
@@ -62,7 +62,7 @@ You need to deploy the FastAPI backend on a platform that supports Python applic
    - Render provides: `https://your-app.onrender.com`
    - Your API: `https://your-app.onrender.com/api`
 
-5. **Update dashboard.html** (same as Railway step 5)
+5. **Update dashboard.html** (same as Railway step 5: add `<meta name="api-base" content="https://your-app.onrender.com/api">` in `<head>` when dashboard is on a different host)
 
 ### Option 3: Deploy Backend on Heroku
 
@@ -147,9 +147,28 @@ If you need environment variables (API keys, etc.), set them in your deployment 
 
 ## Troubleshooting
 
+### "Backend not accessible. Status: 404" when opening /dashboard (API works in Swagger)
+
+**Cause:** The dashboard page is often served by a **different server** than your API (e.g. a static site on the same domain). So `/docs` and `/api/companies` hit your FastAPI app, but when you open `/dashboard`, that request may be served by a static host that doesn’t have `/api` routes, so the dashboard’s `fetch('/api/...')` gets a 404.
+
+**Fix:**
+
+1. **If dashboard and API are the same Render Web Service (only FastAPI, no static site)**  
+   The dashboard now uses `window.location.origin + '/api'`, so it should work. Redeploy and hard-refresh the page (Ctrl+F5). If it still 404s, use (2).
+
+2. **If the dashboard is on a different host (e.g. static site or GitHub Pages)**  
+   Point the dashboard at your API with a meta tag. In `templates/dashboard.html`, inside `<head>`, add:
+   ```html
+   <meta name="api-base" content="https://YOUR-APP.onrender.com/api">
+   ```
+   Replace `YOUR-APP` with your Render service URL (no trailing slash after `api`). Save, redeploy the frontend, and reload the dashboard.
+
+3. **Ensure only one thing serves the site**  
+   On Render, avoid having both a Static Site and a Web Service on the same URL if they overlap. Prefer serving the dashboard from the FastAPI app at `/dashboard` so all requests go to the same backend.
+
 ### Dashboard shows errors
 - Check browser console (F12) for CORS errors
-- Verify backend URL is correct in `dashboard.html`
+- Verify backend URL is correct in `dashboard.html` or via `<meta name="api-base" content="...">`
 - Test backend API directly in browser
 
 ### Backend not responding

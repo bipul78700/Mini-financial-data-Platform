@@ -1,638 +1,646 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Stock Data Intelligence Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .header {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            margin-bottom: 30px;
-            text-align: center;
-        }
-
-        .header h1 {
-            color: #333;
-            margin-bottom: 10px;
-        }
-
-        .header p {
-            color: #666;
-        }
-
-        .controls {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            margin-bottom: 30px;
-        }
-
-        .control-group {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        .control-group label {
-            font-weight: 600;
-            color: #333;
-        }
-
-        .control-group select,
-        .control-group input {
-            padding: 10px 15px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: border-color 0.3s;
-        }
-
-        .control-group select:focus,
-        .control-group input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .btn {
-            padding: 10px 25px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn:active {
-            transform: translateY(0);
-        }
-
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
-            gap: 30px;
-            margin-bottom: 30px;
-        }
-
-        .card {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-
-        .card h2 {
-            color: #333;
-            margin-bottom: 20px;
-            font-size: 20px;
-        }
-
-        .chart-container {
-            position: relative;
-            height: 300px;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-        }
-
-        .stat-card .label {
-            font-size: 12px;
-            opacity: 0.9;
-            margin-bottom: 5px;
-        }
-
-        .stat-card .value {
-            font-size: 24px;
-            font-weight: bold;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #666;
-        }
-
-        .error {
-            background: #fee;
-            color: #c33;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 15px 0;
-        }
-
-        .comparison-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        .comparison-table th,
-        .comparison-table td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-
-        .comparison-table th {
-            background: #f5f5f5;
-            font-weight: 600;
-            color: #333;
-        }
-
-        .comparison-table tr:hover {
-            background: #f9f9f9;
-        }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
+      
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+      
+      .header {
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        margin-bottom: 30px;
+        text-align: center;
+      }
+      
+      .header h1 {
+        color: #333;
+        margin-bottom: 10px;
+      }
+      
+      .header p {
+        color: #666;
+      }
+      
+      .controls {
+        background: white;
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        margin-bottom: 30px;
+      }
+      
+      .control-group {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      
+      .control-group label {
+        font-weight: 600;
+        color: #333;
+      }
+      
+      .control-group select,
+      .control-group input {
+        padding: 10px 15px;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: border-color 0.3s;
+      }
+      
+      .control-group select:focus,
+      .control-group input:focus {
+        outline: none;
+        border-color: #667eea;
+      }
+      
+      .btn {
+        padding: 10px 25px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+      
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+      }
+      
+      .btn:active {
+        transform: translateY(0);
+      }
+      
+      .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+        gap: 30px;
+        margin-bottom: 30px;
+      }
+      
+      .card {
+        background: white;
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      }
+      
+      .card h2 {
+        color: #333;
+        margin-bottom: 20px;
+        font-size: 20px;
+      }
+      
+      .chart-container {
+        position: relative;
+        height: 300px;
+      }
+      
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+      }
+      
+      .stat-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+      }
+      
+      .stat-card .label {
+        font-size: 12px;
+        opacity: 0.9;
+        margin-bottom: 5px;
+      }
+      
+      .stat-card .value {
+        font-size: 24px;
+        font-weight: bold;
+      }
+      
+      .loading {
+        text-align: center;
+        padding: 40px;
+        color: #666;
+      }
+      
+      .error {
+        background: #fee;
+        color: #c33;
+        padding: 15px;
+        border-radius: 8px;
+        margin: 15px 0;
+      }
+      
+      .comparison-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+      
+      .comparison-table th,
+      .comparison-table td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+      }
+      
+      .comparison-table th {
+        background: #f5f5f5;
+        font-weight: 600;
+        color: #333;
+      }
+      
+      .comparison-table tr:hover {
+        background: #f9f9f9;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <div class="header">
-            <h1>📈 Stock Data Intelligence Dashboard</h1>
-            <p>Real-time stock market data analysis and visualization</p>
+      <div class="header">
+        <h1>📈 Stock Data Intelligence Dashboard</h1>
+        <p>Real-time stock market data analysis and visualization</p>
+      </div>
+
+      <div class="controls">
+        <div class="control-group">
+          <label for="symbolSelect">Select Stock:</label>
+          <select id="symbolSelect">
+            <option value="TCS">TCS</option>
+            <option value="INFY">INFY</option>
+            <option value="RELIANCE">RELIANCE</option>
+            <option value="HDFCBANK">HDFCBANK</option>
+            <option value="ICICIBANK">ICICIBANK</option>
+            <option value="WIPRO">WIPRO</option>
+            <option value="HCLTECH">HCLTECH</option>
+          </select>
+
+          <label for="daysInput">Days:</label>
+          <input type="number" id="daysInput" value="30" min="1" max="365" style="width: 80px;" />
+
+          <button class="btn" onclick="loadStockData()">Load Data</button>
+          <button class="btn" onclick="loadSummary()">Load Summary</button>
         </div>
 
-        <div class="controls">
-            <div class="control-group">
-                <label for="symbolSelect">Select Stock:</label>
-                <select id="symbolSelect">
-                    <option value="TCS">TCS</option>
-                    <option value="INFY">INFY</option>
-                    <option value="RELIANCE">RELIANCE</option>
-                    <option value="HDFCBANK">HDFCBANK</option>
-                    <option value="ICICIBANK">ICICIBANK</option>
-                    <option value="WIPRO">WIPRO</option>
-                    <option value="HCLTECH">HCLTECH</option>
-                </select>
+        <div class="control-group" style="margin-top: 15px;">
+          <label for="symbol1Select">Compare:</label>
+          <select id="symbol1Select">
+            <option value="TCS">TCS</option>
+            <option value="INFY">INFY</option>
+            <option value="RELIANCE">RELIANCE</option>
+          </select>
+          <label for="symbol2Select">vs</label>
+          <select id="symbol2Select">
+            <option value="INFY">INFY</option>
+            <option value="TCS">TCS</option>
+            <option value="RELIANCE">RELIANCE</option>
+          </select>
+          <button class="btn" onclick="compareStocks()">Compare</button>
+        </div>
+      </div>
 
-                <label for="daysInput">Days:</label>
-                <input type="number" id="daysInput" value="30" min="1" max="365" style="width: 80px;">
+      <div id="errorContainer"></div>
 
-                <button class="btn" onclick="loadStockData()">Load Data</button>
-                <button class="btn" onclick="loadSummary()">Load Summary</button>
-            </div>
-
-            <div class="control-group" style="margin-top: 15px;">
-                <label for="symbol1Select">Compare:</label>
-                <select id="symbol1Select">
-                    <option value="TCS">TCS</option>
-                    <option value="INFY">INFY</option>
-                    <option value="RELIANCE">RELIANCE</option>
-                </select>
-                <label for="symbol2Select">vs</label>
-                <select id="symbol2Select">
-                    <option value="INFY">INFY</option>
-                    <option value="TCS">TCS</option>
-                    <option value="RELIANCE">RELIANCE</option>
-                </select>
-                <button class="btn" onclick="compareStocks()">Compare</button>
-            </div>
+      <div class="dashboard-grid">
+        <div class="card">
+          <h2>📊 Closing Price Trend</h2>
+          <div class="chart-container">
+            <canvas id="priceChart"></canvas>
+          </div>
         </div>
 
-        <div id="errorContainer"></div>
-
-        <div class="dashboard-grid">
-            <div class="card">
-                <h2>📊 Closing Price Trend</h2>
-                <div class="chart-container">
-                    <canvas id="priceChart"></canvas>
-                </div>
-            </div>
-
-            <div class="card">
-                <h2>📈 Daily Returns</h2>
-                <div class="chart-container">
-                    <canvas id="returnsChart"></canvas>
-                </div>
-            </div>
-
-            <div class="card">
-                <h2>📉 Moving Average (7-day)</h2>
-                <div class="chart-container">
-                    <canvas id="maChart"></canvas>
-                </div>
-            </div>
-
-            <div class="card">
-                <h2>⚡ Volatility Score</h2>
-                <div class="chart-container">
-                    <canvas id="volatilityChart"></canvas>
-                </div>
-            </div>
+        <div class="card">
+          <h2>📈 Daily Returns</h2>
+          <div class="chart-container">
+            <canvas id="returnsChart"></canvas>
+          </div>
         </div>
 
-        <div class="card" id="summaryCard" style="display: none;">
-            <h2>📋 Summary Statistics</h2>
-            <div class="stats-grid" id="statsGrid"></div>
+        <div class="card">
+          <h2>📉 Moving Average (7-day)</h2>
+          <div class="chart-container">
+            <canvas id="maChart"></canvas>
+          </div>
         </div>
 
-        <div class="card" id="comparisonCard" style="display: none;">
-            <h2>🔍 Stock Comparison</h2>
-            <div id="comparisonContent"></div>
+        <div class="card">
+          <h2>⚡ Volatility Score</h2>
+          <div class="chart-container">
+            <canvas id="volatilityChart"></canvas>
+          </div>
         </div>
+      </div>
+
+      <div class="card" id="summaryCard" style="display: none;">
+        <h2>📋 Summary Statistics</h2>
+        <div class="stats-grid" id="statsGrid"></div>
+      </div>
+
+      <div class="card" id="comparisonCard" style="display: none;">
+        <h2>🔍 Stock Comparison</h2>
+        <div id="comparisonContent"></div>
+      </div>
     </div>
 
     <script>
-        // Auto-detect API base URL based on environment
-        // For localhost: http://localhost:8000/api
-        // For deployed backend: Update this to your backend URL (e.g., https://your-backend.railway.app/api)
-        const API_BASE = (() => {
-            // Check if we're on GitHub Pages
-            if (
-                window.location.hostname === 'bipul78700.github.io' || 
-                window.location.hostname.includes('github.io')
-                ) {
-                return 'http://localhost:8000/api'; // Backend API URL
-            }
-            // Default to localhost for local development
-            return 'http://localhost:8000/api';
-        })();
-        
-        let priceChart, returnsChart, maChart, volatilityChart;
-
-        function showError(message) {
-            const container = document.getElementById('errorContainer');
-            container.innerHTML = `<div class="error">❌ ${message}</div>`;
-            setTimeout(() => container.innerHTML = '', 5000);
+      // Auto-detect API base URL based on environment
+      // For localhost: http://localhost:8000/api
+      // For deployed backend: Update this to your backend URL (e.g., https://your-backend.railway.app/api)
+      const API_BASE = (() => {
+        const host = window.location.hostname
+      
+        // Production (Render)
+        if (host.includes('onrender.com')) {
+          return 'https://mini-financial-data-platform-1.onrender.com/api'
         }
-
-        function clearCharts() {
-            if (priceChart) priceChart.destroy();
-            if (returnsChart) returnsChart.destroy();
-            if (maChart) maChart.destroy();
-            if (volatilityChart) volatilityChart.destroy();
+      
+        // Local development
+        return 'http://localhost:8000/api'
+      })();
+      
+      let priceChart, returnsChart, maChart, volatilityChart
+      
+      function showError(message) {
+        const container = document.getElementById('errorContainer')
+        container.innerHTML = `<div class="error">❌ ${message}</div>`
+        setTimeout(() => (container.innerHTML = ''), 5000)
+      }
+      
+      function clearCharts() {
+        if (priceChart) priceChart.destroy()
+        if (returnsChart) returnsChart.destroy()
+        if (maChart) maChart.destroy()
+        if (volatilityChart) volatilityChart.destroy()
+      }
+      
+      async function loadStockData() {
+        const symbol = document.getElementById('symbolSelect').value
+        const days = document.getElementById('daysInput').value
+      
+        // Check if API_BASE is configured
+        if (API_BASE.includes('your-backend-url.here')) {
+          showError('⚠️ Backend API not configured! Please update API_BASE URL in dashboard.html. See DEPLOYMENT_GUIDE.md for instructions.')
+          return
         }
-
-        async function loadStockData() {
-            const symbol = document.getElementById('symbolSelect').value;
-            const days = document.getElementById('daysInput').value;
-            
-            // Check if API_BASE is configured
-            if (API_BASE.includes('your-backend-url.here')) {
-                showError('⚠️ Backend API not configured! Please update API_BASE URL in dashboard.html. See DEPLOYMENT_GUIDE.md for instructions.');
-                return;
-            }
-            
-            try {
-                const response = await fetch(`${API_BASE}/data/${symbol}?days=${days}`);
-                
-                if (!response.ok) {
-                    throw new Error(`Backend not accessible. Status: ${response.status}. Make sure your backend is deployed and API_BASE is correct.`);
-                }
-                
-                const result = await response.json();
-                
-                if (result.status === 'success' && result.data) {
-                    renderCharts(result.data, symbol);
-                } else {
-                    showError('No data available');
-                }
-            } catch (error) {
-                if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-                    showError(`❌ Cannot connect to backend API at ${API_BASE}. Please check: 1) Backend is deployed, 2) API_BASE URL is correct, 3) CORS is enabled.`);
-                } else {
-                    showError(`Error loading data: ${error.message}`);
-                }
-            }
+      
+        try {
+          const response = await fetch(`${API_BASE}/data/${symbol}?days=${days}`)
+      
+          if (!response.ok) {
+            throw new Error(`Backend not accessible. Status: ${response.status}. Make sure your backend is deployed and API_BASE is correct.`)
+          }
+      
+          const result = await response.json()
+      
+          if (result.status === 'success' && result.data) {
+            renderCharts(result.data, symbol)
+          } else {
+            showError('No data available')
+          }
+        } catch (error) {
+          if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+            showError(`❌ Cannot connect to backend API at ${API_BASE}. Please check: 1) Backend is deployed, 2) API_BASE URL is correct, 3) CORS is enabled.`)
+          } else {
+            showError(`Error loading data: ${error.message}`)
+          }
         }
-
-        async function loadSummary() {
-            const symbol = document.getElementById('symbolSelect').value;
-            
-            try {
-                const response = await fetch(`${API_BASE}/summary/${symbol}`);
-                const result = await response.json();
-                
-                if (result.status === 'success' && result.summary) {
-                    renderSummary(result.summary);
-                } else {
-                    showError('No summary available');
-                }
-            } catch (error) {
-                showError(`Error loading summary: ${error.message}`);
-            }
+      }
+      
+      async function loadSummary() {
+        const symbol = document.getElementById('symbolSelect').value
+      
+        try {
+          const response = await fetch(`${API_BASE}/summary/${symbol}`)
+          const result = await response.json()
+      
+          if (result.status === 'success' && result.summary) {
+            renderSummary(result.summary)
+          } else {
+            showError('No summary available')
+          }
+        } catch (error) {
+          showError(`Error loading summary: ${error.message}`)
         }
-
-        async function compareStocks() {
-            const symbol1 = document.getElementById('symbol1Select').value;
-            const symbol2 = document.getElementById('symbol2Select').value;
-            
-            try {
-                const response = await fetch(`${API_BASE}/compare?symbol1=${symbol1}&symbol2=${symbol2}`);
-                const result = await response.json();
-                
-                if (result.status === 'success' && result.comparison) {
-                    renderComparison(result.comparison);
-                } else {
-                    showError('Comparison failed');
-                }
-            } catch (error) {
-                showError(`Error comparing stocks: ${error.message}`);
-            }
+      }
+      
+      async function compareStocks() {
+        const symbol1 = document.getElementById('symbol1Select').value
+        const symbol2 = document.getElementById('symbol2Select').value
+      
+        try {
+          const response = await fetch(`${API_BASE}/compare?symbol1=${symbol1}&symbol2=${symbol2}`)
+          const result = await response.json()
+      
+          if (result.status === 'success' && result.comparison) {
+            renderComparison(result.comparison)
+          } else {
+            showError('Comparison failed')
+          }
+        } catch (error) {
+          showError(`Error comparing stocks: ${error.message}`)
         }
-
-        function renderCharts(data, symbol) {
-            clearCharts();
-            
-            if (!data || data.length === 0) {
-                showError('No data available to render charts');
-                return;
-            }
-            
-            const dates = data.map(d => d.date || '');
-            const closes = data.map(d => d.close || 0).filter(v => !isNaN(v));
-            const returns = data.map(d => {
-                const ret = d.daily_return;
-                return ret != null && !isNaN(ret) ? (ret * 100).toFixed(2) : 0;
-            });
-            const ma7 = data.map(d => {
-                const ma = d.ma_7;
-                return ma != null && !isNaN(ma) ? ma : null;
-            }).filter(v => v !== null);
-            const volatility = data.map(d => {
-                const vol = d.volatility_score;
-                return vol != null && !isNaN(vol) ? (vol * 100).toFixed(2) : 0;
-            });
-
-            // Price Chart
-            const priceCtx = document.getElementById('priceChart').getContext('2d');
-            priceChart = new Chart(priceCtx, {
-                type: 'line',
-                data: {
-                    labels: dates,
-                    datasets: [{
-                        label: `${symbol} Closing Price`,
-                        data: closes,
-                        borderColor: 'rgb(102, 126, 234)',
-                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: true }
-                    },
-                    scales: {
-                        y: { beginAtZero: false }
-                    }
-                }
-            });
-
-            // Returns Chart
-            const returnsCtx = document.getElementById('returnsChart').getContext('2d');
-            returnsChart = new Chart(returnsCtx, {
-                type: 'bar',
-                data: {
-                    labels: dates,
-                    datasets: [{
-                        label: 'Daily Return (%)',
-                        data: returns,
-                        backgroundColor: returns.map(r => r >= 0 ? 'rgba(76, 175, 80, 0.6)' : 'rgba(244, 67, 54, 0.6)')
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: true }
-                    }
-                }
-            });
-
-            // Moving Average Chart
-            const maCtx = document.getElementById('maChart').getContext('2d');
-            maChart = new Chart(maCtx, {
-                type: 'line',
-                data: {
-                    labels: dates,
-                    datasets: [
-                        {
-                            label: 'Closing Price',
-                            data: closes,
-                            borderColor: 'rgba(200, 200, 200, 0.5)',
-                            tension: 0.4
-                        },
-                        {
-                            label: '7-Day MA',
-                            data: ma7,
-                            borderColor: 'rgb(255, 99, 132)',
-                            backgroundColor: 'rgba(255, 99, 132, 0.1)',
-                            tension: 0.4
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: true }
-                    }
-                }
-            });
-
-            // Volatility Chart
-            const volCtx = document.getElementById('volatilityChart').getContext('2d');
-            volatilityChart = new Chart(volCtx, {
-                type: 'line',
-                data: {
-                    labels: dates,
-                    datasets: [{
-                        label: 'Volatility Score (%)',
-                        data: volatility,
-                        borderColor: 'rgb(255, 159, 64)',
-                        backgroundColor: 'rgba(255, 159, 64, 0.1)',
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: true }
-                    }
-                }
-            });
+      }
+      
+      function renderCharts(data, symbol) {
+        clearCharts()
+      
+        if (!data || data.length === 0) {
+          showError('No data available to render charts')
+          return
         }
-
-        function renderSummary(summary) {
-            const card = document.getElementById('summaryCard');
-            const grid = document.getElementById('statsGrid');
-            
-            grid.innerHTML = `
-                <div class="stat-card">
-                    <div class="label">52-Week High</div>
-                    <div class="value">₹${summary.high_52w.toFixed(2)}</div>
-                </div>
-                <div class="stat-card">
-                    <div class="label">52-Week Low</div>
-                    <div class="value">₹${summary.low_52w.toFixed(2)}</div>
-                </div>
-                <div class="stat-card">
-                    <div class="label">Average Close</div>
-                    <div class="value">₹${summary.avg_close.toFixed(2)}</div>
-                </div>
-                <div class="stat-card">
-                    <div class="label">Current Close</div>
-                    <div class="value">₹${summary.current_close.toFixed(2)}</div>
-                </div>
-            `;
-            
-            card.style.display = 'block';
-        }
-
-        function renderComparison(comparison) {
-            const card = document.getElementById('comparisonCard');
-            const content = document.getElementById('comparisonContent');
-            
-            if (!comparison || !comparison.symbol1_metrics || !comparison.symbol2_metrics) {
-                showError('Comparison data is invalid');
-                return;
+      
+        const dates = data.map((d) => d.date || '')
+        const closes = data.map((d) => d.close || 0).filter((v) => !isNaN(v))
+        const returns = data.map((d) => {
+          const ret = d.daily_return
+          return ret != null && !isNaN(ret) ? (ret * 100).toFixed(2) : 0
+        })
+        const ma7 = data
+          .map((d) => {
+            const ma = d.ma_7
+            return ma != null && !isNaN(ma) ? ma : null
+          })
+          .filter((v) => v !== null)
+        const volatility = data.map((d) => {
+          const vol = d.volatility_score
+          return vol != null && !isNaN(vol) ? (vol * 100).toFixed(2) : 0
+        })
+      
+        // Price Chart
+        const priceCtx = document.getElementById('priceChart').getContext('2d')
+        priceChart = new Chart(priceCtx, {
+          type: 'line',
+          data: {
+            labels: dates,
+            datasets: [
+              {
+                label: `${symbol} Closing Price`,
+                data: closes,
+                borderColor: 'rgb(102, 126, 234)',
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                tension: 0.4
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: true }
+            },
+            scales: {
+              y: { beginAtZero: false }
             }
-            
-            const m1 = comparison.symbol1_metrics;
-            const m2 = comparison.symbol2_metrics;
-            
-            // Helper function to safely format numbers
-            const formatNum = (val, decimals = 2) => {
-                if (val == null || isNaN(val)) return 'N/A';
-                return Number(val).toFixed(decimals);
-            };
-            
-            const formatCurrency = (val) => {
-                if (val == null || isNaN(val)) return 'N/A';
-                return `₹${Number(val).toFixed(2)}`;
-            };
-            
-            content.innerHTML = `
-                <div class="stats-grid" style="margin-bottom: 20px;">
-                    <div class="stat-card">
-                        <div class="label">Correlation</div>
-                        <div class="value">${formatNum(comparison.correlation, 3)}</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="label">Better Performer</div>
-                        <div class="value">${comparison.insights?.better_performer || 'N/A'}</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="label">Return Difference</div>
-                        <div class="value">${formatNum(comparison.insights?.return_difference)}%</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="label">Correlation Type</div>
-                        <div class="value">${comparison.insights?.correlation_interpretation || 'N/A'}</div>
-                    </div>
-                </div>
-                
-                <table class="comparison-table">
-                    <thead>
-                        <tr>
-                            <th>Metric</th>
-                            <th>${comparison.symbol1}</th>
-                            <th>${comparison.symbol2}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Total Return (%)</td>
-                            <td>${formatNum(m1.total_return_pct)}%</td>
-                            <td>${formatNum(m2.total_return_pct)}%</td>
-                        </tr>
-                        <tr>
-                            <td>Avg Daily Return</td>
-                            <td>${formatNum(m1.avg_daily_return, 4)}</td>
-                            <td>${formatNum(m2.avg_daily_return, 4)}</td>
-                        </tr>
-                        <tr>
-                            <td>Volatility</td>
-                            <td>${formatNum(m1.volatility, 4)}</td>
-                            <td>${formatNum(m2.volatility, 4)}</td>
-                        </tr>
-                        <tr>
-                            <td>52-Week High</td>
-                            <td>${formatCurrency(m1.high_52w)}</td>
-                            <td>${formatCurrency(m2.high_52w)}</td>
-                        </tr>
-                        <tr>
-                            <td>52-Week Low</td>
-                            <td>${formatCurrency(m1.low_52w)}</td>
-                            <td>${formatCurrency(m2.low_52w)}</td>
-                        </tr>
-                        <tr>
-                            <td>Average Close</td>
-                            <td>${formatCurrency(m1.avg_close)}</td>
-                            <td>${formatCurrency(m2.avg_close)}</td>
-                        </tr>
-                    </tbody>
-                </table>
-            `;
-            
-            card.style.display = 'block';
-        }
-
-        // Check API configuration on page load
-        window.onload = function() {
-            if (API_BASE.includes('your-backend-url.here')) {
-                const container = document.getElementById('errorContainer');
-                container.innerHTML = `
-                    <div class="error" style="background: #fff3cd; border: 2px solid #ffc107; color: #856404;">
-                        <strong>⚠️ Backend API Not Configured</strong><br>
-                        This dashboard requires a deployed FastAPI backend to function.<br>
-                        <strong>Steps to fix:</strong><br>
-                        1. Deploy your FastAPI backend on Railway, Render, or Heroku<br>
-                        2. Update the API_BASE URL in this file (line 288)<br>
-                        3. Replace 'https://your-backend-url.here/api' with your actual backend URL<br>
-                        <br>
-                        See <strong>DEPLOYMENT_GUIDE.md</strong> for detailed instructions.
-                    </div>
-                `;
-            } else {
-                loadStockData();
+          }
+        })
+      
+        // Returns Chart
+        const returnsCtx = document.getElementById('returnsChart').getContext('2d')
+        returnsChart = new Chart(returnsCtx, {
+          type: 'bar',
+          data: {
+            labels: dates,
+            datasets: [
+              {
+                label: 'Daily Return (%)',
+                data: returns,
+                backgroundColor: returns.map((r) => (r >= 0 ? 'rgba(76, 175, 80, 0.6)' : 'rgba(244, 67, 54, 0.6)'))
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: true }
             }
-        };
+          }
+        })
+      
+        // Moving Average Chart
+        const maCtx = document.getElementById('maChart').getContext('2d')
+        maChart = new Chart(maCtx, {
+          type: 'line',
+          data: {
+            labels: dates,
+            datasets: [
+              {
+                label: 'Closing Price',
+                data: closes,
+                borderColor: 'rgba(200, 200, 200, 0.5)',
+                tension: 0.4
+              },
+              {
+                label: '7-Day MA',
+                data: ma7,
+                borderColor: 'rgb(255, 99, 132)',
+                backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                tension: 0.4
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: true }
+            }
+          }
+        })
+      
+        // Volatility Chart
+        const volCtx = document.getElementById('volatilityChart').getContext('2d')
+        volatilityChart = new Chart(volCtx, {
+          type: 'line',
+          data: {
+            labels: dates,
+            datasets: [
+              {
+                label: 'Volatility Score (%)',
+                data: volatility,
+                borderColor: 'rgb(255, 159, 64)',
+                backgroundColor: 'rgba(255, 159, 64, 0.1)',
+                tension: 0.4
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: true }
+            }
+          }
+        })
+      }
+      
+      function renderSummary(summary) {
+        const card = document.getElementById('summaryCard')
+        const grid = document.getElementById('statsGrid')
+      
+        grid.innerHTML = `
+                      <div class="stat-card">
+                          <div class="label">52-Week High</div>
+                          <div class="value">₹${summary.high_52w.toFixed(2)}</div>
+                      </div>
+                      <div class="stat-card">
+                          <div class="label">52-Week Low</div>
+                          <div class="value">₹${summary.low_52w.toFixed(2)}</div>
+                      </div>
+                      <div class="stat-card">
+                          <div class="label">Average Close</div>
+                          <div class="value">₹${summary.avg_close.toFixed(2)}</div>
+                      </div>
+                      <div class="stat-card">
+                          <div class="label">Current Close</div>
+                          <div class="value">₹${summary.current_close.toFixed(2)}</div>
+                      </div>
+                  `
+      
+        card.style.display = 'block'
+      }
+      
+      function renderComparison(comparison) {
+        const card = document.getElementById('comparisonCard')
+        const content = document.getElementById('comparisonContent')
+      
+        if (!comparison || !comparison.symbol1_metrics || !comparison.symbol2_metrics) {
+          showError('Comparison data is invalid')
+          return
+        }
+      
+        const m1 = comparison.symbol1_metrics
+        const m2 = comparison.symbol2_metrics
+      
+        // Helper function to safely format numbers
+        const formatNum = (val, decimals = 2) => {
+          if (val == null || isNaN(val)) return 'N/A'
+          return Number(val).toFixed(decimals)
+        }
+      
+        const formatCurrency = (val) => {
+          if (val == null || isNaN(val)) return 'N/A'
+          return `₹${Number(val).toFixed(2)}`
+        }
+      
+        content.innerHTML = `
+                      <div class="stats-grid" style="margin-bottom: 20px;">
+                          <div class="stat-card">
+                              <div class="label">Correlation</div>
+                              <div class="value">${formatNum(comparison.correlation, 3)}</div>
+                          </div>
+                          <div class="stat-card">
+                              <div class="label">Better Performer</div>
+                              <div class="value">${comparison.insights?.better_performer || 'N/A'}</div>
+                          </div>
+                          <div class="stat-card">
+                              <div class="label">Return Difference</div>
+                              <div class="value">${formatNum(comparison.insights?.return_difference)}%</div>
+                          </div>
+                          <div class="stat-card">
+                              <div class="label">Correlation Type</div>
+                              <div class="value">${comparison.insights?.correlation_interpretation || 'N/A'}</div>
+                          </div>
+                      </div>
+                      
+                      <table class="comparison-table">
+                          <thead>
+                              <tr>
+                                  <th>Metric</th>
+                                  <th>${comparison.symbol1}</th>
+                                  <th>${comparison.symbol2}</th>
+                              </tr>
+                          </thead>
+                          <tbody>
+                              <tr>
+                                  <td>Total Return (%)</td>
+                                  <td>${formatNum(m1.total_return_pct)}%</td>
+                                  <td>${formatNum(m2.total_return_pct)}%</td>
+                              </tr>
+                              <tr>
+                                  <td>Avg Daily Return</td>
+                                  <td>${formatNum(m1.avg_daily_return, 4)}</td>
+                                  <td>${formatNum(m2.avg_daily_return, 4)}</td>
+                              </tr>
+                              <tr>
+                                  <td>Volatility</td>
+                                  <td>${formatNum(m1.volatility, 4)}</td>
+                                  <td>${formatNum(m2.volatility, 4)}</td>
+                              </tr>
+                              <tr>
+                                  <td>52-Week High</td>
+                                  <td>${formatCurrency(m1.high_52w)}</td>
+                                  <td>${formatCurrency(m2.high_52w)}</td>
+                              </tr>
+                              <tr>
+                                  <td>52-Week Low</td>
+                                  <td>${formatCurrency(m1.low_52w)}</td>
+                                  <td>${formatCurrency(m2.low_52w)}</td>
+                              </tr>
+                              <tr>
+                                  <td>Average Close</td>
+                                  <td>${formatCurrency(m1.avg_close)}</td>
+                                  <td>${formatCurrency(m2.avg_close)}</td>
+                              </tr>
+                          </tbody>
+                      </table>
+                  `
+      
+        card.style.display = 'block'
+      }
+      
+      // Check API configuration on page load
+      window.onload = function () {
+        if (API_BASE.includes('your-backend-url.here')) {
+          const container = document.getElementById('errorContainer')
+          container.innerHTML = `
+                          <div class="error" style="background: #fff3cd; border: 2px solid #ffc107; color: #856404;">
+                              <strong>⚠️ Backend API Not Configured</strong><br>
+                              This dashboard requires a deployed FastAPI backend to function.<br>
+                              <strong>Steps to fix:</strong><br>
+                              1. Deploy your FastAPI backend on Railway, Render, or Heroku<br>
+                              2. Update the API_BASE URL in this file (line 288)<br>
+                              3. Replace 'https://your-backend-url.here/api' with your actual backend URL<br>
+                              <br>
+                              See <strong>DEPLOYMENT_GUIDE.md</strong> for detailed instructions.
+                          </div>
+                      `
+        } else {
+          loadStockData()
+        }
+      }
     </script>
-</body>
+  </body>
 </html>

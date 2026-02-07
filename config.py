@@ -9,11 +9,12 @@ from typing import List
 # Database Configuration
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./stock_data.db")
 
-# CORS Configuration
-ALLOWED_ORIGINS = os.getenv(
+# CORS Configuration (comma-separated list; include your Render URL if frontend is on same or different Render service)
+ALLOWED_ORIGINS_STR = os.getenv(
     "ALLOWED_ORIGINS",
     "https://bipul78700.github.io,http://localhost:8000,http://127.0.0.1:8000"
-).split(",")
+)
+ALLOWED_ORIGINS = [o.strip() for o in ALLOWED_ORIGINS_STR.split(",") if o.strip()]
 
 # Add wildcard for development if explicitly set
 CORS_ALLOW_ALL = os.getenv("CORS_ALLOW_ALL", "false").lower() == "true"

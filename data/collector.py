@@ -90,10 +90,14 @@ class StockDataCollector:
                     f"NSE blocked for {symbol}, retrying global symbol"
                 )
                 ticker = yf.Ticker(symbol, session=None)
-                if fetch_period.isdigit():
-                    df = ticker.history(start=start_date, end=end_date)
-                else:
-                    df = ticker.history(period=fetch_period)
+                try:
+                    if fetch_period.isdigit():
+                        df = ticker.history(start=start_date, end=end_date, timeout=15, threads=False)
+                    else:
+                        df = ticker.history(period=fetch_period, timeout=15, threads=False)
+                except Exception as e2:
+                    logger.warning(f"Fallback fetch failed for {symbol}: {e2}")
+                    df = pd.DataFrame()
 
             # ----------------------------------------------
             # No data → exit

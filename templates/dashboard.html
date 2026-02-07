@@ -318,9 +318,17 @@
           const response = await fetch(`${API_BASE}/data/${symbol}?days=${days}`)
       
           if (!response.ok) {
-            var msg = response.status === 404
-              ? 'Backend returned 404 at ' + (API_BASE + '/data/' + symbol) + '. If this dashboard is on a different host than your API (e.g. static site), add <meta name="api-base" content="https://YOUR-API.onrender.com/api"> in the <head>.'
-              : 'Backend not accessible. Status: ' + response.status + '. Check that your API is running at ' + API_BASE + '.'
+            let detail = ''
+            try {
+              const body = await response.json()
+              detail = body.detail || (body.message || '')
+            } catch (_) {}
+            const status = response.status
+            let msg = status === 404
+              ? (detail || 'Endpoint or company not found. If the dashboard is on a different host, add <meta name="api-base" content="https://YOUR-API.onrender.com/api"> in the <head>.')
+              : status === 503
+                ? (detail || 'Stock data temporarily unavailable. Try again in a moment.')
+                : (detail || ('Backend error. Status: ' + status + '.'))
             throw new Error(msg)
           }
       
@@ -345,15 +353,18 @@
       
         try {
           const response = await fetch(`${API_BASE}/summary/${symbol}`)
-          const result = await response.json()
-      
+          const result = await response.json().catch(function () { return {} })
+          if (!response.ok) {
+            showError(result.detail || result.message || ('Summary failed. Status: ' + response.status))
+            return
+          }
           if (result.status === 'success' && result.summary) {
             renderSummary(result.summary)
           } else {
             showError('No summary available')
           }
         } catch (error) {
-          showError(`Error loading summary: ${error.message}`)
+          showError('Error loading summary: ' + error.message)
         }
       }
       
@@ -363,15 +374,18 @@
       
         try {
           const response = await fetch(`${API_BASE}/compare?symbol1=${symbol1}&symbol2=${symbol2}`)
-          const result = await response.json()
-      
+          const result = await response.json().catch(function () { return {} })
+          if (!response.ok) {
+            showError(result.detail || result.message || ('Comparison failed. Status: ' + response.status))
+            return
+          }
           if (result.status === 'success' && result.comparison) {
             renderComparison(result.comparison)
           } else {
             showError('Comparison failed')
           }
         } catch (error) {
-          showError(`Error comparing stocks: ${error.message}`)
+          showError('Error comparing stocks: ' + error.message)
         }
       }
       

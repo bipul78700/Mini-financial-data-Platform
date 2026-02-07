@@ -166,6 +166,26 @@ If you need environment variables (API keys, etc.), set them in your deployment 
 3. **Ensure only one thing serves the site**  
    On Render, avoid having both a Static Site and a Web Service on the same URL if they overlap. Prefer serving the dashboard from the FastAPI app at `/dashboard` so all requests go to the same backend.
 
+### "404" or "Error loading data" at /api/data/SYMBOL (e.g. /api/data/INFY)
+
+**Cause:** The backend is reached, but the **data source** (yfinance) returns no data. On Render free tier this can happen (e.g. NSE blocked, timeout, or cold start). The app now returns **503** with a clear message instead of 404, and the dashboard shows that message.
+
+**Fixes:**
+
+1. **Check the new error message**  
+   After redeploying, the dashboard will show the API’s `detail` (e.g. "Stock data temporarily unavailable..."). Use that to confirm it’s a data issue, not a missing route.
+
+2. **CORS on Render**  
+   If your dashboard is on the same Render Web Service, CORS is not required. If the frontend is on another origin (e.g. another Render URL or GitHub Pages), set the env var on the **backend** service:
+   - `ALLOWED_ORIGINS` = `https://your-dashboard-url.com,https://your-app.onrender.com`  
+   (comma-separated, no spaces after commas.)
+
+3. **Retry**  
+   Free-tier instances can sleep; the first request may fail. Click "Load Data" again after a few seconds.
+
+4. **Logs**  
+   In Render → your service → Logs, look for "No data found for symbol" or "NSE blocked" to confirm yfinance issues.
+
 ### Dashboard shows errors
 - Check browser console (F12) for CORS errors
 - Verify backend URL is correct in `dashboard.html` or via `<meta name="api-base" content="...">`

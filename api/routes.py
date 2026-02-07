@@ -108,7 +108,11 @@ async def get_stock_data(
             logger.info(f"Fetching fresh data for {symbol} (DB has {len(db_records) if db_records else 0} records)")
             df = collector.fetch_stock_data(symbol)
             if df is None or df.empty:
-                raise HTTPException(status_code=404, detail="No stock data available")
+                # 503 = data source temporarily unavailable (e.g. yfinance blocked on Render); 404 = route/symbol not found
+                raise HTTPException(
+                    status_code=503,
+                    detail="Stock data temporarily unavailable. The external data source returned no data (common on free-tier hosting). Try again in a moment or check deployment logs."
+                )
 
             # Process data first, then limit to requested days
             df = processor.process_data(df)

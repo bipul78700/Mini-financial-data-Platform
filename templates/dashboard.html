@@ -278,17 +278,8 @@
       // Auto-detect API base URL based on environment
       // For localhost: http://localhost:8000/api
       // For deployed backend: Update this to your backend URL (e.g., https://your-backend.railway.app/api)
-      const API_BASE = (() => {
-        const host = window.location.hostname
-      
-        // Production (Render)
-        if (host.includes('onrender.com')) {
-          return 'https://mini-financial-data-platform-1.onrender.com/api'
-        }
-      
-        // Local development
-        return 'http://localhost:8000/api'
-      })();
+      const API_BASE = window.location.origin + "/api";
+
       
       let priceChart, returnsChart, maChart, volatilityChart
       

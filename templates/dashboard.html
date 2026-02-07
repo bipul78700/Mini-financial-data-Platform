@@ -278,8 +278,7 @@
       // Auto-detect API base URL based on environment
       // For localhost: http://localhost:8000/api
       // For deployed backend: Update this to your backend URL (e.g., https://your-backend.railway.app/api)
-      const API_BASE = window.location.origin + "/api";
-
+      const API_BASE = window.location.origin;
       
       let priceChart, returnsChart, maChart, volatilityChart
       
@@ -502,23 +501,23 @@
         const grid = document.getElementById('statsGrid')
       
         grid.innerHTML = `
-                      <div class="stat-card">
-                          <div class="label">52-Week High</div>
-                          <div class="value">₹${summary.high_52w.toFixed(2)}</div>
-                      </div>
-                      <div class="stat-card">
-                          <div class="label">52-Week Low</div>
-                          <div class="value">₹${summary.low_52w.toFixed(2)}</div>
-                      </div>
-                      <div class="stat-card">
-                          <div class="label">Average Close</div>
-                          <div class="value">₹${summary.avg_close.toFixed(2)}</div>
-                      </div>
-                      <div class="stat-card">
-                          <div class="label">Current Close</div>
-                          <div class="value">₹${summary.current_close.toFixed(2)}</div>
-                      </div>
-                  `
+                            <div class="stat-card">
+                                <div class="label">52-Week High</div>
+                                <div class="value">₹${summary.high_52w.toFixed(2)}</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="label">52-Week Low</div>
+                                <div class="value">₹${summary.low_52w.toFixed(2)}</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="label">Average Close</div>
+                                <div class="value">₹${summary.avg_close.toFixed(2)}</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="label">Current Close</div>
+                                <div class="value">₹${summary.current_close.toFixed(2)}</div>
+                            </div>
+                        `
       
         card.style.display = 'block'
       }
@@ -547,67 +546,67 @@
         }
       
         content.innerHTML = `
-                      <div class="stats-grid" style="margin-bottom: 20px;">
-                          <div class="stat-card">
-                              <div class="label">Correlation</div>
-                              <div class="value">${formatNum(comparison.correlation, 3)}</div>
-                          </div>
-                          <div class="stat-card">
-                              <div class="label">Better Performer</div>
-                              <div class="value">${comparison.insights?.better_performer || 'N/A'}</div>
-                          </div>
-                          <div class="stat-card">
-                              <div class="label">Return Difference</div>
-                              <div class="value">${formatNum(comparison.insights?.return_difference)}%</div>
-                          </div>
-                          <div class="stat-card">
-                              <div class="label">Correlation Type</div>
-                              <div class="value">${comparison.insights?.correlation_interpretation || 'N/A'}</div>
-                          </div>
-                      </div>
-                      
-                      <table class="comparison-table">
-                          <thead>
-                              <tr>
-                                  <th>Metric</th>
-                                  <th>${comparison.symbol1}</th>
-                                  <th>${comparison.symbol2}</th>
-                              </tr>
-                          </thead>
-                          <tbody>
-                              <tr>
-                                  <td>Total Return (%)</td>
-                                  <td>${formatNum(m1.total_return_pct)}%</td>
-                                  <td>${formatNum(m2.total_return_pct)}%</td>
-                              </tr>
-                              <tr>
-                                  <td>Avg Daily Return</td>
-                                  <td>${formatNum(m1.avg_daily_return, 4)}</td>
-                                  <td>${formatNum(m2.avg_daily_return, 4)}</td>
-                              </tr>
-                              <tr>
-                                  <td>Volatility</td>
-                                  <td>${formatNum(m1.volatility, 4)}</td>
-                                  <td>${formatNum(m2.volatility, 4)}</td>
-                              </tr>
-                              <tr>
-                                  <td>52-Week High</td>
-                                  <td>${formatCurrency(m1.high_52w)}</td>
-                                  <td>${formatCurrency(m2.high_52w)}</td>
-                              </tr>
-                              <tr>
-                                  <td>52-Week Low</td>
-                                  <td>${formatCurrency(m1.low_52w)}</td>
-                                  <td>${formatCurrency(m2.low_52w)}</td>
-                              </tr>
-                              <tr>
-                                  <td>Average Close</td>
-                                  <td>${formatCurrency(m1.avg_close)}</td>
-                                  <td>${formatCurrency(m2.avg_close)}</td>
-                              </tr>
-                          </tbody>
-                      </table>
-                  `
+                            <div class="stats-grid" style="margin-bottom: 20px;">
+                                <div class="stat-card">
+                                    <div class="label">Correlation</div>
+                                    <div class="value">${formatNum(comparison.correlation, 3)}</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="label">Better Performer</div>
+                                    <div class="value">${comparison.insights?.better_performer || 'N/A'}</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="label">Return Difference</div>
+                                    <div class="value">${formatNum(comparison.insights?.return_difference)}%</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="label">Correlation Type</div>
+                                    <div class="value">${comparison.insights?.correlation_interpretation || 'N/A'}</div>
+                                </div>
+                            </div>
+                            
+                            <table class="comparison-table">
+                                <thead>
+                                    <tr>
+                                        <th>Metric</th>
+                                        <th>${comparison.symbol1}</th>
+                                        <th>${comparison.symbol2}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Total Return (%)</td>
+                                        <td>${formatNum(m1.total_return_pct)}%</td>
+                                        <td>${formatNum(m2.total_return_pct)}%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Avg Daily Return</td>
+                                        <td>${formatNum(m1.avg_daily_return, 4)}</td>
+                                        <td>${formatNum(m2.avg_daily_return, 4)}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Volatility</td>
+                                        <td>${formatNum(m1.volatility, 4)}</td>
+                                        <td>${formatNum(m2.volatility, 4)}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>52-Week High</td>
+                                        <td>${formatCurrency(m1.high_52w)}</td>
+                                        <td>${formatCurrency(m2.high_52w)}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>52-Week Low</td>
+                                        <td>${formatCurrency(m1.low_52w)}</td>
+                                        <td>${formatCurrency(m2.low_52w)}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Average Close</td>
+                                        <td>${formatCurrency(m1.avg_close)}</td>
+                                        <td>${formatCurrency(m2.avg_close)}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        `
       
         card.style.display = 'block'
       }
@@ -617,17 +616,17 @@
         if (API_BASE.includes('your-backend-url.here')) {
           const container = document.getElementById('errorContainer')
           container.innerHTML = `
-                          <div class="error" style="background: #fff3cd; border: 2px solid #ffc107; color: #856404;">
-                              <strong>⚠️ Backend API Not Configured</strong><br>
-                              This dashboard requires a deployed FastAPI backend to function.<br>
-                              <strong>Steps to fix:</strong><br>
-                              1. Deploy your FastAPI backend on Railway, Render, or Heroku<br>
-                              2. Update the API_BASE URL in this file (line 288)<br>
-                              3. Replace 'https://your-backend-url.here/api' with your actual backend URL<br>
-                              <br>
-                              See <strong>DEPLOYMENT_GUIDE.md</strong> for detailed instructions.
-                          </div>
-                      `
+                                <div class="error" style="background: #fff3cd; border: 2px solid #ffc107; color: #856404;">
+                                    <strong>⚠️ Backend API Not Configured</strong><br>
+                                    This dashboard requires a deployed FastAPI backend to function.<br>
+                                    <strong>Steps to fix:</strong><br>
+                                    1. Deploy your FastAPI backend on Railway, Render, or Heroku<br>
+                                    2. Update the API_BASE URL in this file (line 288)<br>
+                                    3. Replace 'https://your-backend-url.here/api' with your actual backend URL<br>
+                                    <br>
+                                    See <strong>DEPLOYMENT_GUIDE.md</strong> for detailed instructions.
+                                </div>
+                            `
         } else {
           loadStockData()
         }

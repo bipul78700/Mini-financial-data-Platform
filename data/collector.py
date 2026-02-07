@@ -69,7 +69,7 @@ class StockDataCollector:
                 f"Fetching data for {symbol} ({yf_symbol}) | period={fetch_period}"
             )
 
-            ticker = yf.Ticker(yf_symbol)
+            ticker = yf.Ticker(yf_symbol, session=None)
             end_date = datetime.now()
 
             # ----------------------------------------------
@@ -78,9 +78,9 @@ class StockDataCollector:
             if fetch_period.isdigit():
                 days = int(fetch_period)
                 start_date = end_date - timedelta(days=days)
-                df = ticker.history(start=start_date, end=end_date)
+                df = ticker.history(start=start_date, end=end_date, timeout=15, threads=False)
             else:
-                df = ticker.history(period=fetch_period)
+                df = ticker.history(period=fetch_period, timeout=15, threads=False)
 
             # ----------------------------------------------
             # Fallback for cloud (Render blocks NSE)
@@ -89,7 +89,7 @@ class StockDataCollector:
                 logger.warning(
                     f"NSE blocked for {symbol}, retrying global symbol"
                 )
-                ticker = yf.Ticker(symbol)
+                ticker = yf.Ticker(symbol, session=None)
                 if fetch_period.isdigit():
                     df = ticker.history(start=start_date, end=end_date)
                 else:
@@ -117,7 +117,7 @@ class StockDataCollector:
             return df
 
         except Exception as e:
-            logger.error(f"Error fetching data for {symbol}: {e}")
+            logger.exception(f"Error fetching data for {symbol}")
             return None
 
     # --------------------------------------------------

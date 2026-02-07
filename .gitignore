@@ -28,6 +28,7 @@ ENV/
 
 # Database
 *.db
+!stock_data.db
 *.sqlite
 *.sqlite3
 
